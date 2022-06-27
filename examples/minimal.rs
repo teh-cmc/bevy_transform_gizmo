@@ -1,6 +1,5 @@
 use bevy::{prelude::*, window::PresentMode::Mailbox};
 use bevy_mod_picking::Selection;
-use bevy_transform_gizmo::TransformGizmoBundle;
 
 fn main() {
     App::new()
@@ -37,16 +36,31 @@ fn setup(
     let mut selection = Selection::default();
     selection.set_selected(true);
     commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
-            ..Default::default()
+        .spawn_bundle(TransformBundle {
+            local: Transform::from_scale(Vec3::splat(2.0)),
+            ..default()
         })
-        .insert(selection)
-        // .insert_bundle(TransformGizmoBundle::default())
-        // .insert_bundle(bevy_mod_picking::PickableBundle::default())
-        .insert(bevy_transform_gizmo::GizmoTransformable);
+        .with_children(|b| {
+            b.spawn_bundle(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 20.0 })),
+                material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                transform: Transform::from_xyz(0.0, 0.5, 0.0).with_scale(Vec3::splat(0.0075)),
+                ..Default::default()
+            })
+            .insert_bundle(bevy_mod_picking::PickableBundle::default())
+            .insert(bevy_transform_gizmo::GizmoTransformable)
+            .with_children(|b| {
+                for i in 0..10 {
+                    b.spawn_bundle(PbrBundle {
+                        mesh: meshes.add(Mesh::from(shape::Cube { size: 20.0 })),
+                        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                        transform: Transform::from_xyz(i as f32 * 40.0, 0.5, 0.0)
+                            .with_scale(Vec3::splat(0.1)),
+                        ..Default::default()
+                    });
+                }
+            });
+        });
     // light
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),

@@ -170,7 +170,7 @@ pub enum TransformGizmoInteraction {
 
 #[derive(Component)]
 struct InitialTransform {
-    transform: GlobalTransform,
+    transform: Transform,
 }
 
 /// Updates the position of the gizmo and selected meshes while the gizmo is being dragged.
@@ -345,7 +345,7 @@ fn grab_gizmo(
     mouse_button_input: Res<Input<MouseButton>>,
     mut gizmo_events: EventWriter<TransformGizmoEvent>,
     mut gizmo_query: Query<(&mut TransformGizmo, &mut Interaction, &GlobalTransform)>,
-    selected_items_query: Query<(&Selection, &GlobalTransform, Entity)>,
+    selected_items_query: Query<(&Selection, &Transform, Entity)>,
     initial_transform_query: Query<Entity, With<InitialTransform>>,
 ) {
     if mouse_button_input.just_pressed(MouseButton::Left) {
