@@ -11,6 +11,7 @@ mod mesh;
 mod normalization;
 
 pub mod picking;
+use picking::GizmoRaycastSet;
 pub use picking::{GizmoPickSource, PickableGizmo};
 
 pub struct GizmoSystemsEnabled(pub bool);
@@ -84,7 +85,7 @@ impl Plugin for TransformGizmoPlugin {
                     .with_system(
                         hover_gizmo
                             .label(TransformGizmoSystem::Hover)
-                            .after(RaycastSystem::UpdateRaycast),
+                            .after(RaycastSystem::UpdateRaycast::<GizmoRaycastSet>),
                     )
                     .with_system(
                         grab_gizmo

@@ -48,9 +48,13 @@ fn setup(
     });
     // camera
     commands
-        .spawn_bundle(PerspectiveCameraBundle {
+        .spawn_bundle(Camera3dBundle {
             transform: Transform::from_xyz(2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..Default::default()
+            camera: Camera {
+                is_active: true,
+                ..default()
+            },
+            ..default()
         })
         .insert_bundle(bevy_mod_picking::PickingCameraBundle::default())
         .insert(bevy_transform_gizmo::GizmoPickSource::default());

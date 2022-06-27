@@ -1,3 +1,5 @@
+use std::num::NonZeroU64;
+
 use bevy::{
     ecs::system::{lifetimeless::SRes, SystemParamItem},
     pbr::MaterialPipeline,
@@ -6,10 +8,9 @@ use bevy::{
     render::{
         render_asset::{PrepareAssetError, RenderAsset},
         render_resource::{
-            std140::{AsStd140, Std140},
-            BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
+            encase, BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
             BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, Buffer,
-            BufferBindingType, BufferInitDescriptor, BufferSize, BufferUsages, ShaderStages,
+            BufferBindingType, BufferInitDescriptor, BufferUsages, ShaderStages, ShaderType,
         },
         renderer::RenderDevice,
     },
@@ -29,10 +30,11 @@ impl From<Color> for GizmoMaterial {
     }
 }
 
-#[derive(Clone, Default, AsStd140)]
+#[derive(Clone, Default, ShaderType)]
 pub struct GizmoMaterialUniformData {
     pub color: Vec4,
 }
+const GIZMO_MATERIAL_UBO_SIZE: NonZeroU64 = GizmoMaterialUniformData::METADATA.min_size().0;
 
 #[derive(Clone)]
 pub struct GpuGizmoMaterial {
@@ -55,10 +57,12 @@ impl RenderAsset for GizmoMaterial {
         let value = GizmoMaterialUniformData {
             color: material.color.as_linear_rgba_f32().into(),
         };
-        let value_std140 = value.as_std140();
+
+        let mut buffer = encase::UniformBuffer::new([0u8; GIZMO_MATERIAL_UBO_SIZE.get() as usize]);
+        buffer.write(&value).unwrap();
 
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
-            contents: value_std140.as_bytes(),
+            contents: buffer.as_ref(),
             label: None,
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
         });
@@ -103,7 +107,7 @@ impl Material for GizmoMaterial {
                 ty: BindingType::Buffer {
                     ty: BufferBindingType::Uniform,
                     has_dynamic_offset: false,
-                    min_binding_size: BufferSize::new(Vec4::std140_size_static() as u64),
+                    min_binding_size: Some(GIZMO_MATERIAL_UBO_SIZE),
                 },
                 count: None,
             }],
