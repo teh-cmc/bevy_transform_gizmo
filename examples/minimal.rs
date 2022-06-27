@@ -1,4 +1,6 @@
 use bevy::{prelude::*, window::PresentMode::Mailbox};
+use bevy_mod_picking::Selection;
+use bevy_transform_gizmo::TransformGizmoBundle;
 
 fn main() {
     App::new()
@@ -32,6 +34,8 @@ fn setup(
         .insert_bundle(bevy_mod_picking::PickableBundle::default())
         .insert(bevy_transform_gizmo::GizmoTransformable);
     // cube
+    let mut selection = Selection::default();
+    selection.set_selected(true);
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -39,7 +43,9 @@ fn setup(
             transform: Transform::from_xyz(0.0, 0.5, 0.0),
             ..Default::default()
         })
-        .insert_bundle(bevy_mod_picking::PickableBundle::default())
+        .insert(selection)
+        // .insert_bundle(TransformGizmoBundle::default())
+        // .insert_bundle(bevy_mod_picking::PickableBundle::default())
         .insert(bevy_transform_gizmo::GizmoTransformable);
     // light
     commands.spawn_bundle(PointLightBundle {
